@@ -33,7 +33,7 @@ pub mod cruddapp {
 }
 
 #[derive(Accounts)]
-#[instruction(title:String,messgae:String)]
+#[instruction(title:String,message:String)]
 
 pub struct DeleteJournal<'info> {
     #[account(
@@ -49,7 +49,7 @@ pub struct DeleteJournal<'info> {
 
 }
 #[derive(Accounts)]
-#[instruction(title:String,messgae:String)]
+#[instruction(title:String,message:String)]
 
 pub struct UpdateJournal<'info> {
     #[account(
@@ -66,7 +66,7 @@ pub struct UpdateJournal<'info> {
     pub system_program: Program<'info, System>,
 }
 #[derive(Accounts)]
-#[instruction(title:String,messgae:String)]
+#[instruction(title:String,message:String)]
 pub struct CreateEntry<'info> {
     #[account(
     init,
