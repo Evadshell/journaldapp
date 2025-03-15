@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -13,12 +14,20 @@ import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 const FeatureTesting = () => {
   const { program } = useProgram();
   const { publicKey } = useWallet();
-  const [entries, setEntries] = useState([]);
+  interface JournalEntry {
+    publicKey: anchor.web3.PublicKey;
+    account: {
+      title: string;
+      message: string;
+    };
+  }
+  
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
   const [editMessage, setEditMessage] = useState("");
-  const [selectedEntry, setSelectedEntry] = useState(null);
+  const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
   const [mounted, setMounted] = useState(false);
 
   // Handle client-side mounting to prevent hydration errors
@@ -28,10 +37,13 @@ const FeatureTesting = () => {
 
   // Memoize fetchEntries to prevent unnecessary re-renders
   const fetchEntries = useCallback(async () => {
-    if (!program || !publicKey) return;
+    if (!program || !publicKey) {
+      console.error("Program or publicKey not available");
+      return;
+    }
     
     try {
-      const fetchedEntries = await program.account.journalEntryState.all();
+      const fetchedEntries = await program.account.journalEntry.all();
       setEntries(fetchedEntries);
       setLoading(false);
     } catch (error) {
@@ -48,6 +60,12 @@ const FeatureTesting = () => {
     }
 
     try {
+
+      if (!program) {
+        console.error("Program not available");
+        return;
+      }
+  
       const [journalPDA] = anchor.web3.PublicKey.findProgramAddressSync(
         [Buffer.from(title), publicKey.toBuffer()],
         program.programId
@@ -71,14 +89,14 @@ const FeatureTesting = () => {
     }
   };
 
-  const updateJournalEntry = async (entry) => {
+  const updateJournalEntry = async (entry: JournalEntry) => {
     if (!publicKey) {
       console.error("Wallet not connected");
       return;
     }
     
     try {
-      const tx = await program.methods
+      const tx = await program?.methods
         .updateJournalEntry(entry.account.title, editMessage)
         .accounts({ 
           owner: publicKey, 
@@ -94,11 +112,16 @@ const FeatureTesting = () => {
     }
   };
 
-  const deleteEntry = async (entry) => {
+  const deleteEntry = async (entry:JournalEntry) => {
     if (!publicKey) return;
     
     try {
       const title = entry.account.title;
+
+      if (!program) {
+        console.error("Program not available");
+        return;
+      }
 
       const [journalPDA] = anchor.web3.PublicKey.findProgramAddressSync(
         [Buffer.from(title), publicKey.toBuffer()],
